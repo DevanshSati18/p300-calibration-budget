@@ -1,0 +1,12 @@
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+outputs/logs/*
+!outputs/logs/.gitkeep
+__pycache__/
+*.pyc
+.venv/
+.ipynb_checkpoints/
+.DS_Store
+*.npz
