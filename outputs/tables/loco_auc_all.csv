@@ -1,0 +1,15 @@
+study,observed_b80,observed_censored,observed_max_k,pred_pooled,pred_pooled_censored,err_pooled,err_pooled_type,pred_median,err_median,err_median_type,err_pooled_ge_2,err_median_ge_2
+A,30.0,False,36.0,,True,,undefined,8.0,22.0,exact,False,True
+B,20.0,False,21.0,,True,,undefined,8.0,12.0,exact,False,True
+E,20.0,False,36.0,,True,,undefined,8.0,12.0,exact,False,True
+I,,True,24.0,,True,,undefined,11.5,12.5,lower_bound,False,True
+J,,True,30.0,,True,,undefined,11.5,18.5,lower_bound,False,True
+K,,True,18.0,,True,,undefined,11.5,6.5,lower_bound,False,True
+L,,True,30.0,,True,,undefined,11.5,18.5,lower_bound,False,True
+M,,True,30.0,,True,,undefined,11.5,18.5,lower_bound,False,True
+N,,True,30.0,,True,,undefined,11.5,18.5,lower_bound,False,True
+O,8.0,False,36.0,,True,,undefined,15.0,7.0,exact,False,True
+Q,15.0,False,36.0,,True,,undefined,8.0,7.0,exact,False,True
+R,3.0,False,18.0,,True,,undefined,15.0,12.0,exact,False,True
+S1,2.0,False,18.0,,True,,undefined,15.0,13.0,exact,False,True
+S2,4.0,False,18.0,,True,,undefined,15.0,11.0,exact,False,True

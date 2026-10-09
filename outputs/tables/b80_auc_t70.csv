@@ -1,0 +1,15 @@
+study,n_participants,b80_chars,censored,max_evaluable_k,b80_seconds,ci_low,ci_high,ci_high_censored,share_boot_censored,share_usable_full,metric,config_hash
+A,13,20.0,False,36.0,299.99989093387865,8.0,20.0,False,0.0,1.0,auc,5c9f0dff71f4
+B,18,10.0,False,21.0,449.99989624781074,6.0,,True,0.152,0.8333333333333334,auc,5c9f0dff71f4
+E,8,8.0,False,36.0,120.0,3.0,20.0,False,0.0,1.0,auc,5c9f0dff71f4
+I,13,,True,24.0,,,,True,0.997,0.38461538461538464,auc,5c9f0dff71f4
+J,20,,True,30.0,,,,True,0.998,0.45,auc,5c9f0dff71f4
+K,5,,True,18.0,,3.0,,True,0.9085,0.4,auc,5c9f0dff71f4
+L,11,15.0,False,30.0,472.4998916439732,6.0,,True,0.069,0.9090909090909091,auc,5c9f0dff71f4
+M,21,,True,30.0,,20.0,,True,0.7585,0.7142857142857143,auc,5c9f0dff71f4
+N,8,,True,30.0,,6.0,,True,0.6475,0.75,auc,5c9f0dff71f4
+O,17,4.0,False,36.0,59.999978186775735,3.0,6.0,False,0.0,1.0,auc,5c9f0dff71f4
+Q,36,10.0,False,36.0,149.99994546693932,6.0,15.0,False,0.0,1.0,auc,5c9f0dff71f4
+R,20,2.0,False,18.0,62.999985748621526,1.0,3.0,False,0.0,1.0,auc,5c9f0dff71f4
+S1,10,2.0,False,18.0,44.9999865294668,1.0,4.0,False,0.0,1.0,auc,5c9f0dff71f4
+S2,24,3.0,False,18.0,67.49997979420019,2.0,3.0,False,0.0,1.0,auc,5c9f0dff71f4

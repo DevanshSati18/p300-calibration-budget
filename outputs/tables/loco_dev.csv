@@ -1,0 +1,4 @@
+study,observed_b80,observed_censored,observed_max_k,pred_pooled,pred_pooled_censored,err_pooled,err_pooled_type,pred_median,err_median,err_median_type,err_pooled_ge_2,err_median_ge_2
+A,15.0,False,36.0,,True,,undefined,17.0,2.0,exact,False,True
+B,4.0,False,25.0,30.0,False,26.0,exact,22.5,18.5,exact,True,True
+E,30.0,False,36.0,15.0,False,15.0,exact,9.5,20.5,exact,True,True

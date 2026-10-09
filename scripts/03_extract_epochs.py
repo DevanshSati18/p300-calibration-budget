@@ -19,7 +19,7 @@ Outputs
   data/processed/epochs/...           one .npz per record
   outputs/tables/extraction_log.csv   one row per record
 Usage
-  python scripts/03_extract_epochs.py [--jobs 4] [--studies A B] [--overwrite]
+  python scripts/03_extract_epochs.py [--jobs 4] [--studies A B] [--overwrite] [--dev]
 """
 from __future__ import annotations
 
@@ -32,7 +32,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
-from p300budget.config import load_config, project_path  # noqa: E402
+from p300budget.config import load_config, output_name, project_path, select_dev  # noqa: E402
 from p300budget.events import extract_events  # noqa: E402
 from p300budget.io_edf import read_edf  # noqa: E402
 from p300budget.preprocess import preprocess_file  # noqa: E402
@@ -77,13 +77,27 @@ def load_phase(paths: list[str], cfg: dict) -> dict:
     )
 
 
+def stats_from_npz(path: Path) -> dict:
+    """Summary statistics read back from a cached record (used for the log)."""
+    d = np.load(path)
+    return {"n_grid": int(d["n_grid"]),
+            "n_train_chars": int(d["t_train_char_s"].shape[0]),
+            "n_test_chars": int(d["target_test"].shape[0]),
+            "n_train_flashes": int(d["y_train"].shape[0]),
+            "n_test_flashes": int(d["y_test"].shape[0]),
+            "train_reject_rate": float(d["r_train"].mean()),
+            "test_reject_rate": float(d["r_test"].mean()),
+            "median_train_char_s": float(np.median(d["t_train_char_s"])),
+            "online_acc": float(np.mean(d["selected_test"] == d["target_test"]))}
+
+
 def process_record(row: dict, files: pd.DataFrame, cfg: dict, out_dir: Path, overwrite: bool) -> dict:
     rid = f"{row['participant']}_{row['session']}_{row['condition']}"
     out = out_dir / row["study"] / f"{rid}.npz"
     log = dict(study=row["study"], participant=row["participant"], session=row["session"],
                condition=row["condition"], record=rid, path=str(out))
     if out.exists() and not overwrite:
-        return {**log, "status": "cached"}
+        return {**log, "status": "cached", "error": "", **stats_from_npz(out)}
     try:
         f = files[(files.participant == row["participant"]) & (files.session == row["session"])
                   & (files.condition == row["condition"])].sort_values("run")
@@ -114,6 +128,7 @@ def main() -> None:
     ap.add_argument("--jobs", type=int, default=4)
     ap.add_argument("--studies", nargs="*", default=None)
     ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--dev", action="store_true", help="quick run on a small subset (config: dev)")
     args = ap.parse_args()
 
     cfg = load_config()
@@ -127,6 +142,9 @@ def main() -> None:
     todo = recs[recs.record_eligible & recs.study.isin(eligible)]
     if args.studies:
         todo = todo[todo.study.isin(args.studies)]
+    if args.dev:
+        todo = select_dev(todo.assign(record=todo.participant + "_" + todo.session + "_" + todo.condition), cfg)
+        print("DEV MODE: " + ", ".join(todo.record))
     print(f"Extracting {len(todo)} records from {todo.study.nunique()} cohorts")
 
     logs = Parallel(n_jobs=args.jobs, verbose=5)(
@@ -135,14 +153,14 @@ def main() -> None:
     )
     log = pd.DataFrame(logs)
     log["config_hash"] = cfg["_hash"]
-    log_path = tables / "extraction_log.csv"
-    if log_path.exists() and args.studies:  # partial run: merge with earlier log
+    log_path = tables / output_name("extraction_log.csv", args.dev)
+    if log_path.exists() and args.studies and not args.dev:  # partial run: merge with earlier log
         old = pd.read_csv(log_path)
         log = pd.concat([old[~old.record.isin(log.record)], log], ignore_index=True)
     log.to_csv(log_path, index=False)
 
     print(log.status.value_counts().to_string())
-    done = log[log.status == "ok"]
+    done = log[log.status.isin(["ok", "cached"])]
     if len(done):
         print(done.groupby("study").agg(records=("record", "size"),
                                         train_chars=("n_train_chars", "median"),

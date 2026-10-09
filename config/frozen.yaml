@@ -1,0 +1,71 @@
+# Frozen analysis settings — proposal v1.0 (9 Oct 2026).
+# Change only via the PROPOSAL.md checkpoints, and log the change there.
+
+project: p300-calibration-budget
+version: "1.0"
+
+paths:
+  data_root: data/raw/bigP3BCI-data
+  interim: data/interim
+  processed: data/processed
+  tables: outputs/tables
+  figures: outputs/figures
+  logs: outputs/logs
+
+data:
+  sfreq_expected: 256
+  # Shared 16-channel montage present in every study (first 16 EEG channels).
+  eeg_channels: [EEG_F3, EEG_Fz, EEG_F4, EEG_T7, EEG_C3, EEG_Cz, EEG_C4, EEG_T8,
+                 EEG_CP3, EEG_CP4, EEG_P3, EEG_Pz, EEG_P4, EEG_PO7, EEG_PO8, EEG_Oz]
+  # Studies whose online outcomes cannot be recovered (Gorenshtein et al. 2026).
+  excluded_studies: [C, P]
+  # Cohorts with a documented ALS population (bigP3BCI descriptor). Descriptive only.
+  als_studies: [B, F, L, N]
+
+preprocess:
+  bandpass_hz: [0.5, 30.0]
+  filter_order: 4            # Butterworth, zero-phase (sosfiltfilt)
+  epoch_tmin_s: -0.2
+  epoch_tmax_s: 0.8
+  baseline_s: [-0.2, 0.0]
+  feature_tmin_s: 0.0        # features use 0–800 ms post-stimulus
+  decim: 4                   # 256 Hz -> 64 Hz
+  reject_uv: 150.0           # absolute amplitude threshold, logged per session
+
+decoder:
+  name: shrinkage_lda        # sklearn LDA, solver=lsqr, shrinkage=auto (Ledoit-Wolf)
+
+budget:
+  # k = number of calibration characters, taken in recording order.
+  grid: [1, 2, 3, 4, 6, 8, 10, 12, 15, 20, 25, 30, 40, 50]
+  usable_accuracy: 0.70
+  coverage: 0.80             # B80: share of participants that must be usable
+  # Co-primary AUC budget (added 9 Oct 2026, Phase B): flash-level AUC does not depend
+  # on test length, so it covers dynamic-stopping cohorts. Sensitivity: 0.70, 0.80.
+  auc_threshold: 0.75
+  auc_threshold_sensitivity: [0.70, 0.80]
+  # B80 (character accuracy) is interpreted only in cohorts where offline decoding at
+  # full calibration is within this tolerance of the original online accuracy.
+  decoding_tolerance: 0.10
+
+eligibility:
+  min_participants: 5
+  min_k_levels: 4
+
+decoding:
+  # Primary: decode each test character with every flash the original protocol
+  # presented ("as-run" test length; dynamic-stopping tests included as run).
+  # Decided 9 Oct 2026 after the inventory: the frozen "largest common R" rule gave R = 0.
+  repetitions: as_run
+  # Secondary analysis: every character flashed exactly this many times
+  # (test characters that never reach it are dropped and counted).
+  secondary_repetitions: 1
+
+stats:
+  bootstrap_reps: 2000
+  seed: 20261009
+
+dev:
+  # Quick-run subset used by the --dev flag (outputs get a _dev suffix).
+  studies: [A, B, E]
+  records_per_study: 2
