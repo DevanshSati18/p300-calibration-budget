@@ -25,6 +25,7 @@ from scipy import stats
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from p300budget.config import load_config, output_name, project_path  # noqa: E402
+import p300budget.stats_models as sm_mod  # noqa: E402
 from p300budget.stats_models import (cohort_descriptors, decoding_validity,  # noqa: E402
                                      fit_all_cohorts, holm, loco_b80, meta_regression,
                                      random_effects)
@@ -45,6 +46,8 @@ def main() -> None:
     tag = f"{args.metric}_{subset}"
 
     cfg = load_config()
+    sm_mod.K_CENTER = float(cfg["stats"]["k_center"])
+    h4 = cfg["hypotheses"]
     T = project_path(cfg["paths"]["tables"])
     b = cfg["budget"]
     name = lambda n: T / output_name(n, args.dev)  # noqa: E731
@@ -72,7 +75,7 @@ def main() -> None:
     fits.to_csv(name(f"cohort_fits_{tag}.csv"), index=False)
     ok = fits[fits.status == "ok"]
     unit = "log-odds correct" if args.metric == "acc" else "AUC"
-    print(f"Stage 1 — {unit} ~ log k per cohort (intercept at k = 4)")
+    print(f"Stage 1 — {unit} ~ log k per cohort (intercept at k = {sm_mod.K_CENTER:g})")
     print(ok[["study", "n_participants", "intercept", "intercept_se", "slope", "slope_se"]]
           .round(3).to_string(index=False))
 
@@ -126,7 +129,7 @@ def main() -> None:
     print(bmod.round(3).to_string(index=False))
 
     # RQ4: leave-one-cohort-out ----------------------------------------------
-    loco = loco_b80(pc, b80, thr, b["coverage"])
+    loco = loco_b80(pc, b80, thr, b["coverage"], h4["h4_min_error_chars"])
     loco.to_csv(name(f"loco_{tag}.csv"), index=False)
     print("\nRQ4 — leave-one-cohort-out budget prediction (characters)")
     print(loco[["study", "observed_b80", "observed_censored", "pred_pooled", "err_pooled",
@@ -135,10 +138,10 @@ def main() -> None:
         defined = loco[loco[f"err_{which}_type"] != "undefined"]
         label = "primary" if which == "pooled" else "secondary"
         if len(defined):
-            share = defined[f"err_{which}_ge_2"].mean()
+            share = (defined[f"err_{which}"] >= h4["h4_min_error_chars"]).mean()
             print(f"{which:6} ({label}): n={len(defined)}, median error "
-                  f"{defined[f'err_{which}'].median():.1f}; share >= 2 chars = {share:.2f} "
-                  f"(H4 predicts >= 0.33) -> supported: {share >= 1/3}")
+                  f"{defined[f'err_{which}'].median():.1f}; share >= {h4['h4_min_error_chars']} chars = {share:.2f} "
+                  f"(H4 predicts >= {h4['h4_min_share']:.2f}) -> supported: {share >= h4['h4_min_share']}")
         else:
             print(f"{which:6} ({label}): undefined for every cohort (pooled budget never reached)")
     if args.dev:

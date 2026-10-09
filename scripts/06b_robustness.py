@@ -4,7 +4,7 @@ Variants, each for B80 (character accuracy, valid-decoding subset) and the AUC b
 (all cohorts):
   base          as in the primary analysis
   first_session each participant's first session only
-  low_artefact  records with <= 20% rejected calibration epochs only
+  low_artefact  records with <= robustness.max_reject_rate rejected calibration epochs
   thr_low/high  accuracy threshold 0.60 / 0.80 (B80) or AUC 0.70 / 0.80 (AUC budget)
 Outputs
   outputs/tables/robustness_budgets.csv   variant × metric × cohort
@@ -27,7 +27,6 @@ from p300budget.budget import compute_b80, participant_curves  # noqa: E402
 from p300budget.config import load_config, output_name, project_path  # noqa: E402
 from p300budget.stats_models import decoding_validity  # noqa: E402
 
-MAX_REJECT = 0.20
 
 
 def curves(sweep: pd.DataFrame, metric: str) -> pd.DataFrame:
@@ -56,11 +55,11 @@ def main() -> None:
     s_first = s_first[s_first.session == s_first.first_session].drop(columns="first_session")
     full = s[(s.k == s.n_train_chars_total) & (s.status == "ok")]
     rej = full.n_rejected_in_budget / (full.n_train_epochs + full.n_rejected_in_budget)
-    clean = set(full.loc[rej <= MAX_REJECT, "record"])
+    clean = set(full.loc[rej <= cfg["robustness"]["max_reject_rate"], "record"])
     s_clean = s[s.record.isin(clean)]
 
     thr = {"acc": b["usable_accuracy"], "auc": b["auc_threshold"]}
-    alt = {"acc": (0.60, 0.80), "auc": tuple(b["auc_threshold_sensitivity"])}
+    alt = {"acc": tuple(cfg["robustness"]["accuracy_sensitivity"]), "auc": tuple(b["auc_threshold_sensitivity"])}
     variants = [("base", s, None), ("first_session", s_first, None), ("low_artefact", s_clean, None),
                 ("thr_low", s, 0), ("thr_high", s, 1)]
 
@@ -71,7 +70,7 @@ def main() -> None:
             pc = curves(data, metric)
             if metric == "acc":
                 pc = pc[pc.study.isin(valid_set)]
-            res = compute_b80(pc, t, b["coverage"], st["bootstrap_reps"] // 4, st["seed"])
+            res = compute_b80(pc, t, b["coverage"], cfg["robustness"]["bootstrap_reps"], st["seed"])
             res["variant"], res["metric"], res["threshold"] = name, metric, t
             rows.append(res)
     out = pd.concat(rows, ignore_index=True)

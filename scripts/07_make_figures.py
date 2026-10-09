@@ -37,9 +37,24 @@ plt.rcParams.update({
 KTICKS = [1, 2, 4, 8, 16, 32]
 
 
+PAPER = False  # set by --paper: white background, no headline titles (captions carry them)
+
+
+def headline(obj, text, **kw):
+    """Figure/axes headline; omitted in paper mode."""
+    if PAPER:
+        return
+    if hasattr(obj, "suptitle"):
+        obj.suptitle(text, **kw)
+    else:
+        obj.set_title(text, **kw)
+
+
 def save(fig, out: Path, stem: str, dev: bool):
+    stem = stem + ("_paper" if PAPER else "")
     for ext in ("png", "pdf"):
-        fig.savefig(out / output_name(f"{stem}.{ext}", dev), dpi=200, bbox_inches="tight")
+        fig.savefig(out / output_name(f"{stem}.{ext}", dev), dpi=300 if PAPER else 200,
+                    bbox_inches="tight")
     plt.close(fig)
 
 
@@ -67,7 +82,7 @@ def fig_learning_curves(T, out, dev, cfg):
         ax.axhline(cfg["budget"]["coverage"], color=INK2, lw=0.8, ls="--")
         ax.plot(g.k, g.mean_acc, color=c1, marker="o", ms=3.5, label="Mean character accuracy")
         ax.plot(g.k, g.share_usable, color=c2, lw=1.4, ls=(0, (4, 2)) if not ok else "-",
-                label="Share of participants ≥ 70%")
+                label=f"Share of participants ≥ {cfg['budget']['usable_accuracy']:.0%}")
         r = b80.loc[s]
         if not r.censored:
             ax.axvline(r.b80_chars, color=INK, lw=1)
@@ -87,13 +102,14 @@ def fig_learning_curves(T, out, dev, cfg):
         ax.set_xlabel("Calibration characters (k)")
     h, l = axes[0].get_legend_handles_labels()
     fig.legend(h, l, loc="upper center", ncol=2, bbox_to_anchor=(0.5, 1.03))
-    fig.suptitle("Calibration learning curves per cohort (dotted: 70% accuracy; dashed: 80% coverage)",
-                 y=1.07, fontsize=10, fontweight="bold")
+    headline(fig, f"Calibration learning curves per cohort (dotted: {cfg['budget']['usable_accuracy']:.0%} accuracy; "
+             f"dashed: {cfg['budget']['coverage']:.0%} coverage)",
+             y=1.07, fontsize=10, fontweight="bold")
     fig.tight_layout()
     save(fig, out, "fig1_learning_curves", dev)
 
 
-def fig_budgets(T, out, dev):
+def fig_budgets(T, out, dev, cfg):
     acc = pd.read_csv(T / output_name("b80.csv", dev)).set_index("study")
     auc = pd.read_csv(T / output_name("b80_auc.csv", dev)).set_index("study")
     val = pd.read_csv(T / output_name("decoding_validity.csv", dev)).set_index("study")
@@ -102,7 +118,7 @@ def fig_budgets(T, out, dev):
     fig, ax = plt.subplots(figsize=(6.2, 0.36 * len(order) + 1.2))
     for i, s in enumerate(order):
         for df, color, dy, lab in ((acc, BLUE, 0.17, "B80 (character accuracy)"),
-                                   (auc, ORANGE, -0.17, "AUC budget (AUC ≥ 0.75)")):
+                                   (auc, ORANGE, -0.17, f"AUC budget (AUC ≥ {cfg['budget']['auc_threshold']:.2f})")):
             r = df.loc[s]
             invalid = df is acc and s in val.index and not val.loc[s, "valid_decoding"]
             col = MUTED if invalid else color
@@ -118,15 +134,17 @@ def fig_budgets(T, out, dev):
     ax.set_yticks(range(len(order)), order)
     ax.set_ylim(-0.7, len(order) - 0.3)
     log_k_axis(ax)
-    ax.set_xlabel("Calibration characters needed for 80% of participants (log scale)")
+    ax.set_xlabel(f"Calibration characters needed for {cfg['budget']['coverage']:.0%} of participants (log scale)")
     ax.grid(axis="y", visible=False)
     from matplotlib.lines import Line2D
     handles = [Line2D([], [], color=BLUE, marker="o", label="B80 (character accuracy)"),
-               Line2D([], [], color=ORANGE, marker="o", label="AUC budget (AUC ≥ 0.75)"),
+               Line2D([], [], color=ORANGE, marker="o", label=f"AUC budget (AUC ≥ {cfg['budget']['auc_threshold']:.2f})"),
                Line2D([], [], color=MUTED, marker="o", mfc=SURFACE, label="B80, decoding not valid"),
                Line2D([], [], color=INK2, marker=">", ls="none", mfc=SURFACE, label="Not reached (> max k)")]
     ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=8)
-    ax.set_title("Calibration budget varies about 15-fold across cohorts", loc="left", pad=34)
+    reached = auc[~auc.censored].b80_chars
+    ratio = reached.max() / reached.min() if len(reached) >= 2 else float("nan")
+    headline(ax, f"Calibration budget varies about {ratio:.0f}-fold across cohorts", loc="left", pad=34)
     fig.tight_layout()
     save(fig, out, "fig2_budgets", dev)
 
@@ -135,7 +153,7 @@ def fig_moderators(T, out, dev):
     panels = [("acc_valid", "Learning-curve slope (log-odds per log k)\nvalid-decoding cohorts", BLUE),
               ("auc_all", "Learning-curve slope (AUC per log k)\nall cohorts", ORANGE)]
     panels = [p for p in panels if (T / output_name(f"moderators_{p[0]}.csv", dev)).exists()]
-    fig, axes = plt.subplots(1, len(panels), figsize=(4.0 * len(panels), 3.2), sharey=True)
+    fig, axes = plt.subplots(1, len(panels), figsize=(4.6 * len(panels), 3.2), sharey=True)
     axes = np.atleast_1d(axes)
     labels = {"seconds_per_calib_char": "Seconds per calibration character",
               "test_flashes_per_char": "Test flashes per character", "grid_size": "Grid size",
@@ -153,11 +171,12 @@ def fig_moderators(T, out, dev):
             sig = r.p_holm < 0.05
             ax.plot([r.beta - 1.96 * r.se, r.beta + 1.96 * r.se], [i, i], color=color, lw=1.6)
             ax.plot(r.beta, i, "o", ms=6, color=color, mfc=color if sig else SURFACE, mew=1.6)
-            ax.text(1.02, i, f"p={r.p:.2f} (Holm {r.p_holm:.2f})", transform=ax.get_yaxis_transform(),
+            ptxt = f"p={r.p:.3f}" if r.p < 0.01 else f"p={r.p:.2f}"
+            ax.text(1.02, i, f"{ptxt} (Holm {r.p_holm:.2f})", transform=ax.get_yaxis_transform(),
                     fontsize=7, color=INK2, va="center")
         ax.set_yticks(y, [labels[d] for d in m.descriptor])
         ax.set_title(title, loc="left", fontsize=8.5)
-        ax.set_xlabel("Standardised coefficient (per SD of descriptor)")
+        ax.set_xlabel("Standardised coefficient (per SD)")
         ax.grid(axis="y", visible=False)
     sig = []
     for tag, _, _ in panels:
@@ -165,12 +184,12 @@ def fig_moderators(T, out, dev):
         sig += [labels.get(d, d) for d in m.loc[m.p_holm < 0.05, "descriptor"]]
     head = (f"{' and '.join(sorted(set(sig)))} explains slope differences after Holm correction"
             if sig else "No protocol descriptor explains slope differences after Holm correction")
-    fig.suptitle(head + " (filled = significant)", fontsize=9.5, fontweight="bold", x=0.02, ha="left")
+    headline(fig, head + " (filled = significant)", fontsize=9.5, fontweight="bold", x=0.02, ha="left")
     fig.tight_layout()
     save(fig, out, "fig3_moderators", dev)
 
 
-def fig_loco(T, out, dev):
+def fig_loco(T, out, dev, cfg):
     tag = "auc_all"
     path = T / output_name(f"loco_{tag}.csv", dev)
     if not path.exists():
@@ -197,9 +216,10 @@ def fig_loco(T, out, dev):
                        Line2D([], [], color=INK2, marker="|", ls="none", ms=10, mew=2,
                               label="Predicted from other cohorts (median)")],
               loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=8)
-    share = (lo.err_median >= 2).mean()
-    ax.set_title(f"A budget borrowed from other cohorts misses by ≥ 2 characters in {share:.0%} of cohorts",
-                 loc="left", pad=44)
+    e = cfg["hypotheses"]["h4_min_error_chars"]
+    share = (lo.err_median >= e).mean()
+    headline(ax, f"A budget borrowed from other cohorts misses by ≥ {e} characters in {share:.0%} of cohorts",
+             loc="left", pad=44)
     fig.tight_layout()
     save(fig, out, "fig4_transportability", dev)
 
@@ -208,15 +228,21 @@ def main() -> None:
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     ap = argparse.ArgumentParser()
     ap.add_argument("--dev", action="store_true")
+    ap.add_argument("--paper", action="store_true", help="print versions for the manuscript")
     args = ap.parse_args()
+    global PAPER, SURFACE
+    PAPER = args.paper
+    if PAPER:
+        SURFACE = "#ffffff"
+        plt.rcParams.update({"figure.facecolor": SURFACE, "axes.facecolor": SURFACE,
+                             "savefig.facecolor": SURFACE})
     cfg = load_config()
     T = project_path(cfg["paths"]["tables"])
     out = project_path(cfg["paths"]["figures"])
     out.mkdir(parents=True, exist_ok=True)
-    for f in (fig_learning_curves,):
+    for f in (fig_learning_curves, fig_budgets, fig_loco):
         f(T, out, args.dev, cfg)
-    for f in (fig_budgets, fig_moderators, fig_loco):
-        f(T, out, args.dev)
+    fig_moderators(T, out, args.dev)
     print(f"Figures written to {out}")
 
 

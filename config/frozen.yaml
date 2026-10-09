@@ -51,6 +51,8 @@ budget:
 eligibility:
   min_participants: 5
   min_k_levels: 4
+  # Share of flashes where StimulusType must agree with 'intended character lit'.
+  min_label_consistency: 0.99
 
 decoding:
   # Primary: decode each test character with every flash the original protocol
@@ -64,6 +66,19 @@ decoding:
 stats:
   bootstrap_reps: 2000
   seed: 20261009
+  # Learning-curve intercepts are reported at this calibration size (log k centred here).
+  k_center: 4
+
+robustness:
+  # Pre-specified variants (PROPOSAL.md §8); bootstrap reps reduced for the 10 variants.
+  max_reject_rate: 0.20
+  accuracy_sensitivity: [0.60, 0.80]
+  bootstrap_reps: 500
+
+hypotheses:
+  # H4: a borrowed budget errs by >= min_error_chars in >= min_share of cohorts.
+  h4_min_error_chars: 2
+  h4_min_share: 0.3333
 
 dev:
   # Quick-run subset used by the --dev flag (outputs get a _dev suffix).

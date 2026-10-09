@@ -14,7 +14,7 @@ from scipy import stats
 
 from .budget import _b80_from_matrix
 
-K_CENTER = 4.0  # intercept = log-odds of a correct character at k = 4
+K_CENTER = 4.0  # default; scripts set it from config stats.k_center
 
 
 # ---------------------------------------------------------------- stage 1
@@ -155,7 +155,8 @@ def _loco_error(pred, pred_cens, obs_b80, obs_cens, obs_max):
     return np.nan, "undefined"
 
 
-def loco_b80(pc: pd.DataFrame, b80: pd.DataFrame, usable: float, coverage: float) -> pd.DataFrame:
+def loco_b80(pc: pd.DataFrame, b80: pd.DataFrame, usable: float, coverage: float,
+             min_error: float = 2) -> pd.DataFrame:
     """Leave one cohort out. Two predictors of the withheld cohort's B80:
       pooled  (primary)   — B80 of all other cohorts' participants pooled together
       median  (secondary) — median B80 of the other cohorts that reached B80
@@ -181,8 +182,8 @@ def loco_b80(pc: pd.DataFrame, b80: pd.DataFrame, usable: float, coverage: float
                          err_pooled=e1, err_pooled_type=t1,
                          pred_median=pred_med, err_median=e2, err_median_type=t2))
     out = pd.DataFrame(rows)
-    out["err_pooled_ge_2"] = out.err_pooled >= 2
-    out["err_median_ge_2"] = out.err_median >= 2
+    out["err_pooled_ge_2"] = out.err_pooled >= min_error   # column names kept for compatibility
+    out["err_median_ge_2"] = out.err_median >= min_error
     return out
 
 

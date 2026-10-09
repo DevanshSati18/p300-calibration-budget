@@ -114,7 +114,7 @@ def main() -> None:
     rec["k_levels"] = rec.n_train_chars.apply(lambda n: sum(k <= n for k in grid))
     rec["record_eligible"] = (
         rec.has_train & rec.has_test & (rec.n_test_chars > 0)
-        & (rec.consistency >= 0.99) & ~rec.fake_feedback_any
+        & (rec.consistency >= el["min_label_consistency"]) & ~rec.fake_feedback_any
         & (rec.k_levels >= el["min_k_levels"])
     )
     rec["config_hash"] = cfg["_hash"]
