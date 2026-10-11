@@ -1,0 +1,8 @@
+descriptor,n,spearman_rho,p,p_holm
+seconds_per_calib_char,3,,,
+test_flashes_per_char,3,,,
+grid_size,3,,,
+isi_ms,3,,,
+share_rc,3,,,
+lit_per_flash,3,,,
+als_cohort,3,,,

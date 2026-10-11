@@ -1,0 +1,4 @@
+study,n_participants,b80_chars,censored,max_evaluable_k,b80_seconds,ci_low,ci_high,ci_high_censored,share_boot_censored,share_usable_full,metric,config_hash
+A,1,15.0,False,36.0,224.0624182815445,15.0,15.0,False,0.0,1.0,acc,c50d062ecb83
+B,1,4.0,False,25.0,179.99994856705496,4.0,4.0,False,0.0,1.0,acc,c50d062ecb83
+E,2,30.0,False,36.0,450.0,15.0,30.0,False,0.0,0.5,acc,c50d062ecb83

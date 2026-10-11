@@ -35,7 +35,10 @@ def sweep_one(row: dict, cfg: dict, cache_dir: Path, overwrite: bool) -> pd.Data
             return cached
     meta = {k: row[k] for k in ("study", "participant", "session", "condition", "record")}
     try:
-        d = load_record(row["path"])
+        path = Path(row["path"])
+        if not path.exists():  # logs store absolute paths; rebuild for clones / moved repos
+            path = project_path(cfg["paths"]["processed"]) / "epochs" / row["study"] / f"{row['record']}.npz"
+        d = load_record(path)
         rows = run_record(d, cfg["budget"]["grid"], cfg["decoding"]["repetitions"],
                           cfg["decoding"]["secondary_repetitions"],
                           shuffle_seed=cfg["stats"]["seed"])
