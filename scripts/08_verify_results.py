@@ -188,9 +188,23 @@ def main() -> None:
             "budget min-max": f"{h_acc['budget']['min']:.0f} to {h_acc['budget']['max']:.0f} characters",
             "15-fold": f"{h_acc['budget']['ratio_max_min']:.0f}-fold",
             "artefact Holm p": f"p={mods.loc['train_reject_rate', 'p_holm']:.3f}",
-            "LOCO median AUC": f"median error {loco_auc.err_median.median():.0f}",
-            "LOCO median acc": f"median {loco_acc.err_median.median():.0f})",
         }
+        ts_path = T / "transport_summary.json"
+        if ts_path.exists():  # step 09: factors (2**|log2 error|) quoted in Results D and the abstract
+            ts = json.load(open(ts_path))
+            f1 = lambda x: f"{2 ** x:.1f}"  # noqa: E731
+            a, u = ts["acc"], ts["auc"]
+            expect.update({
+                "borrowed factors": f"factor of {f1(a['borrowed_median_log2'])} (B80, 7 cohorts",
+                "borrowed AUC factor": f"and {f1(u['borrowed_median_log2'])} (AUC, 8 cohorts)",
+                "split-half factors": f"median factor of {f1(a['split_half_median_log2'])} (B80) and {f1(u['split_half_median_log2'])} (AUC)",
+                "pilot n5": (f"{2 ** u['n5_pilot']['median_log2']:.2f} for the AUC budget (borrowed "
+                             f"{f1(u['n5_borrowed_median']['median_log2'])}) and {f1(a['n5_pilot']['median_log2'])} "
+                             f"for B80 (borrowed {f1(a['n5_borrowed_median']['median_log2'])})"),
+                "split-half >=2 chars": f"{100 * a['split_half_share_abs_ge2']:.0f}\\% (B80) and {100 * u['split_half_share_abs_ge2']:.0f}\\% (AUC)",
+                "ratio CI acc": f"{a['ratio']['ci_low']:.0f}--{a['ratio']['ci_high']:.0f}-fold for B80",
+                "ratio CI auc": f"{u['ratio']['ci_low']:.1f}--{u['ratio']['ci_high']:.0f}-fold for the AUC",
+            })
         missing = [f"{k} ('{v}')" for k, v in expect.items()
                    if v.replace(" ", "") not in re.sub(r"\s+", "", tex)]
         check("manuscript numbers match the output tables", not missing,

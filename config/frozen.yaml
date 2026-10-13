@@ -80,6 +80,15 @@ hypotheses:
   h4_min_error_chars: 2
   h4_min_share: 0.3333
 
+transport_extension:
+  # Added 13 Oct 2026 after the internal audit (post-hoc, see PROPOSAL.md change log).
+  # Within-cohort reference for transport error, local-pilot rule, spread-ratio bootstrap.
+  split_half_reps: 500
+  pilot_sizes: [3, 5, 8]
+  pilot_reps: 500
+  ratio_bootstrap_reps: 2000
+  seed: 20261013
+
 dev:
   # Quick-run subset used by the --dev flag (outputs get a _dev suffix).
   studies: [A, B, E]

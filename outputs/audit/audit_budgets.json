@@ -1,0 +1,291 @@
+{
+ "acc_valid": {
+  "ratio_boot": {
+   "median": 15.0,
+   "ci": [
+    6.25,
+    15.0
+   ],
+   "p_ge2": 1.0,
+   "p_ge5": 0.996,
+   "p_ge10": 0.937
+  },
+  "ratio_drop_one": {
+   "B": 15.0,
+   "L": 15.0,
+   "O": 15.0,
+   "Q": 12.5,
+   "R": 15.0,
+   "S1": 7.5,
+   "S2": 15.0
+  },
+  "split_half_within_cohort": {
+   "median_abs": 2.0,
+   "median_log2": 0.585,
+   "share_ge2": 0.658,
+   "n": 1982
+  },
+  "loco_baselines": [
+   {
+    "pred": "max_conservative",
+    "median_err": 15.0,
+    "median_log2_exact": 1.0,
+    "share_under": 0.333,
+    "share_err_ge2": 0.889
+   },
+   {
+    "pred": "median",
+    "median_err": 13.0,
+    "median_log2_exact": 1.322,
+    "share_under": 0.667,
+    "share_err_ge2": 1.0
+   },
+   {
+    "pred": "p75",
+    "median_err": 15.0,
+    "median_log2_exact": 1.0,
+    "share_under": 0.444,
+    "share_err_ge2": 1.0
+   }
+  ],
+  "loco_detail": [
+   {
+    "study": "A",
+    "pred": "median",
+    "err": 21.0,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "B",
+    "pred": "median",
+    "err": 4.5,
+    "log2": 0.515,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "L",
+    "pred": "median",
+    "err": 14.5,
+    "log2": 1.252,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "N",
+    "pred": "median",
+    "err": 15.0,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "O",
+    "pred": "median",
+    "err": 4.5,
+    "log2": 0.515,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "Q",
+    "pred": "median",
+    "err": 19.5,
+    "log2": 1.515,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "R",
+    "pred": "median",
+    "err": 11.0,
+    "log2": 1.907,
+    "under": false,
+    "type": "exact"
+   },
+   {
+    "study": "S1",
+    "pred": "median",
+    "err": 13.0,
+    "log2": 2.907,
+    "under": false,
+    "type": "exact"
+   },
+   {
+    "study": "S2",
+    "pred": "median",
+    "err": 9.0,
+    "log2": 1.322,
+    "under": false,
+    "type": "exact"
+   }
+  ]
+ },
+ "auc_all": {
+  "ratio_boot": {
+   "median": 15.0,
+   "ci": [
+    7.5,
+    15.0
+   ],
+   "p_ge2": 1.0,
+   "p_ge5": 1.0,
+   "p_ge10": 0.957
+  },
+  "ratio_drop_one": {
+   "A": 10.0,
+   "B": 15.0,
+   "E": 15.0,
+   "O": 15.0,
+   "Q": 15.0,
+   "R": 15.0,
+   "S1": 10.0,
+   "S2": 15.0
+  },
+  "split_half_within_cohort": {
+   "median_abs": 2.0,
+   "median_log2": 0.485,
+   "share_ge2": 0.554,
+   "n": 2174
+  },
+  "loco_baselines": [
+   {
+    "pred": "max_conservative",
+    "median_err": 10.0,
+    "median_log2_exact": 1.453,
+    "share_under": 0.5,
+    "share_err_ge2": 0.571
+   },
+   {
+    "pred": "median",
+    "median_err": 12.25,
+    "median_log2_exact": 1.614,
+    "share_under": 0.714,
+    "share_err_ge2": 1.0
+   },
+   {
+    "pred": "p75",
+    "median_err": 10.0,
+    "median_log2_exact": 1.05,
+    "share_under": 0.643,
+    "share_err_ge2": 0.929
+   }
+  ],
+  "loco_detail": [
+   {
+    "study": "A",
+    "pred": "median",
+    "err": 22.0,
+    "log2": 1.907,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "B",
+    "pred": "median",
+    "err": 12.0,
+    "log2": 1.322,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "E",
+    "pred": "median",
+    "err": 12.0,
+    "log2": 1.322,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "I",
+    "pred": "median",
+    "err": 12.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "J",
+    "pred": "median",
+    "err": 18.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "K",
+    "pred": "median",
+    "err": 6.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "L",
+    "pred": "median",
+    "err": 18.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "M",
+    "pred": "median",
+    "err": 18.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "N",
+    "pred": "median",
+    "err": 18.5,
+    "log2": NaN,
+    "under": true,
+    "type": "lower_bound"
+   },
+   {
+    "study": "O",
+    "pred": "median",
+    "err": 7.0,
+    "log2": 0.907,
+    "under": false,
+    "type": "exact"
+   },
+   {
+    "study": "Q",
+    "pred": "median",
+    "err": 7.0,
+    "log2": 0.907,
+    "under": true,
+    "type": "exact"
+   },
+   {
+    "study": "R",
+    "pred": "median",
+    "err": 12.0,
+    "log2": 2.322,
+    "under": false,
+    "type": "exact"
+   },
+   {
+    "study": "S1",
+    "pred": "median",
+    "err": 13.0,
+    "log2": 2.907,
+    "under": false,
+    "type": "exact"
+   },
+   {
+    "study": "S2",
+    "pred": "median",
+    "err": 11.0,
+    "log2": 1.907,
+    "under": false,
+    "type": "exact"
+   }
+  ]
+ }
+}

@@ -24,7 +24,7 @@ def fit_decoder(X: np.ndarray, y: np.ndarray):
 
 
 def decode_character(scores: np.ndarray, lit: np.ndarray, repetitions: int | None) -> int:
-    """Pick the character with the highest summed score over the flashes that lit it.
+    """Pick the character with the highest mean score over the flashes that lit it.
 
     scores: (n_flash,) classifier scores for one character block, in flash order.
     lit:    (n_flash, n_grid) bool.

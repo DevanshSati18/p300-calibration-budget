@@ -37,8 +37,10 @@ ln -s /path/to/bigP3BCI-data data/raw/bigP3BCI-data
 | 05 | `scripts/05_compute_budget.py` | learning curves, B80 with bootstrap CIs |
 | 06 | `scripts/06_run_stats.py --metric acc\|auc` | heterogeneity, moderators, leave-one-cohort-out |
 | 06b | `scripts/06b_robustness.py` | robustness variants (first session, low artefact, thresholds) |
-| 07 | `scripts/07_make_figures.py [--paper]` | figures in `outputs/figures/` (`--paper`: print versions) |
+| 07 | `scripts/07_make_figures.py [--paper]` (after 09 for Fig. 4) | figures in `outputs/figures/` (`--paper`: print versions) |
 | 08 | `scripts/08_verify_results.py` | independent verification → `outputs/tables/verification_report.csv` |
+| 09 | `scripts/09_transport_pilot.py` | transport error vs within-cohort split-half reference, local-pilot rule, spread-ratio CI, intercept moderators |
+| 10 | `scripts/10_participant_overlap.py` | screen for the same person in several studies (sex + birth year in EDF headers) |
 
 Shortcuts: `bash scripts/run_phaseB.sh` (budgets + stats) and `bash scripts/run_phaseC.sh` (stats, robustness, figures).
 Any step accepts `--dev` for a quick run on a small subset.

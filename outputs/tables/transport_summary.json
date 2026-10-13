@@ -1,0 +1,91 @@
+{
+  "config_hash": "a721d344575c",
+  "acc": {
+    "split_half_median_log2": 0.5849625007211563,
+    "split_half_share_abs_ge2": 0.6496505621391674,
+    "borrowed_median_log2": 1.3219280948873624,
+    "n_borrowed_exact": 7,
+    "n3_borrowed_median": {
+      "target_met": 0.402,
+      "median_log2": 1.19,
+      "median_k": 15.0
+    },
+    "n3_pilot": {
+      "target_met": 0.451,
+      "median_log2": 0.661,
+      "median_k": 15.0
+    },
+    "n5_borrowed_median": {
+      "target_met": 0.404,
+      "median_log2": 0.737,
+      "median_k": 15.0
+    },
+    "n5_pilot": {
+      "target_met": 0.378,
+      "median_log2": 0.585,
+      "median_k": 12.0
+    },
+    "n8_borrowed_median": {
+      "target_met": 0.435,
+      "median_log2": 0.737,
+      "median_k": 12.0
+    },
+    "n8_pilot": {
+      "target_met": 0.5,
+      "median_log2": 0.585,
+      "median_k": 15.0
+    },
+    "ratio": {
+      "median": 15.0,
+      "ci_low": 6.25,
+      "ci_high": 18.0,
+      "p_ge5": 0.997,
+      "p_ge10": 0.9375
+    },
+    "intercept_min_p_holm": 1.0
+  },
+  "auc": {
+    "split_half_median_log2": 0.4150374992788438,
+    "split_half_share_abs_ge2": 0.5478737997256515,
+    "borrowed_median_log2": 1.6144093452479402,
+    "n_borrowed_exact": 8,
+    "n3_borrowed_median": {
+      "target_met": 0.331,
+      "median_log2": 1.19,
+      "median_k": 12.0
+    },
+    "n3_pilot": {
+      "target_met": 0.421,
+      "median_log2": 0.585,
+      "median_k": 20.0
+    },
+    "n5_borrowed_median": {
+      "target_met": 0.327,
+      "median_log2": 1.322,
+      "median_k": 12.0
+    },
+    "n5_pilot": {
+      "target_met": 0.339,
+      "median_log2": 0.535,
+      "median_k": 15.0
+    },
+    "n8_borrowed_median": {
+      "target_met": 0.316,
+      "median_log2": 1.114,
+      "median_k": 12.0
+    },
+    "n8_pilot": {
+      "target_met": 0.432,
+      "median_log2": 0.415,
+      "median_k": 22.0
+    },
+    "ratio": {
+      "median": 15.0,
+      "ci_low": 7.5,
+      "ci_high": 15.0,
+      "p_ge5": 1.0,
+      "p_ge10": 0.9565
+    },
+    "intercept_min_p_holm": 0.14515773145399424
+  }
+}

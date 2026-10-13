@@ -3,7 +3,7 @@
 Fig 1  learning curves: mean character accuracy and share of usable participants vs k
 Fig 2  calibration budgets per cohort: B80 (accuracy) and AUC budget, bootstrap 95% CI
 Fig 3  RQ3 moderators: standardised meta-regression coefficients (± 95% CI)
-Fig 4  RQ4 transportability: observed budget vs leave-one-cohort-out typical budget
+Fig 4  RQ4 transportability: observed budget vs leave-one-cohort-out typical budget\nFig 4b transport error vs within-cohort reference and local pilot (needs step 09); used as Fig 4 in the paper
 Usage
   python scripts/07_make_figures.py [--dev]
 """
@@ -90,7 +90,7 @@ def fig_learning_curves(T, out, dev, cfg):
         else:
             ax.text(0.97, 0.04, f"B80 > {r.max_evaluable_k:.0f}", fontsize=7.5, color=INK2,
                     ha="right", transform=ax.transAxes)
-        title = f"{s}  (n={int(r.n_participants)})" + ("" if ok else "  · decoding not valid")
+        title = f"{s}  (n={int(r.n_participants)})" + ("" if ok else "  · invalid")
         ax.set_title(title, loc="left", color=INK if ok else INK2)
         log_k_axis(ax)
         ax.set_ylim(0, 1.02)
@@ -224,6 +224,64 @@ def fig_loco(T, out, dev, cfg):
     save(fig, out, "fig4_transportability", dev)
 
 
+def fig_transport_error(T, out, dev, cfg):
+    """Fig 4: how far each rule's budget is from a cohort's own budget (factor, log2 scale).
+
+    grey  = within-cohort split-half (sampling noise within one protocol)
+    orange = borrowed (median of the other cohorts' budgets); open triangle = lower bound (censored)
+    blue  = local pilot of n participants from the same cohort
+    """
+    npil = 5
+    labels = {"acc": f"B80 (character accuracy, valid-decoding cohorts)",
+              "auc": f"AUC budget (AUC $\\geq$ {cfg['budget']['auc_threshold']}, all cohorts)"}
+    fig, axes = plt.subplots(2, 1, figsize=(3.5, 5.0), height_ratios=[9, 14], sharex=True)
+    for ax, metric, obsf in zip(axes, ("acc", "auc"), ("b80.csv", "b80_auc.csv")):
+        ref = pd.read_csv(T / f"transport_reference_{metric}.csv")
+        pil = pd.read_csv(T / f"pilot_{metric}.csv")
+        obs = pd.read_csv(T / obsf).set_index("study")
+        cohorts = sorted(ref.study.unique() if metric == "acc" else obs.index)
+        if metric == "acc":
+            cohorts = sorted(set(pd.read_csv(T / "pilot_acc.csv").study))
+        sh = ref[ref.rule == "split_half"].groupby("study").log2_err.median()
+        bo = ref[ref.rule == "borrowed_median"].set_index("study").log2_err
+        pi = pil[(pil.rule == "pilot") & (pil.n_pilot == npil)].groupby("study").log2_err.median()
+        reached = obs[~obs.censored].b80_chars
+        lb = {}
+        for s in cohorts:
+            if bool(obs.loc[s, "censored"]):
+                pred = reached.drop(index=s, errors="ignore").median()
+                lb[s] = max(0.0, np.log2(obs.loc[s, "max_evaluable_k"] / pred))
+        order = sorted(cohorts, key=lambda s: -(bo.get(s, np.nan) if s in bo else lb.get(s, 0)))
+        y = np.arange(len(order))
+        for i, s in enumerate(order):
+            ax.plot([0, 3.2], [i, i], color=GRID, lw=0.6, zorder=0)
+            if s in sh and np.isfinite(sh[s]):
+                ax.plot(sh[s], i, "o", color=MUTED, mfc="none", mew=1.4, ms=8, zorder=5)
+            if s in bo and np.isfinite(bo[s]):
+                ax.plot(bo[s], i, "o", color=ORANGE, ms=6, zorder=3)
+            elif s in lb:
+                ax.plot(lb[s], i, ">", color=ORANGE, mfc="white", ms=6, zorder=3)
+            if s in pi and np.isfinite(pi[s]):
+                ax.plot(pi[s], i, "D", color=BLUE, ms=4.5, zorder=4)
+        ax.set_yticks(y, order)
+        ax.invert_yaxis()
+        ax.set_ylim(len(order) - 0.5, -0.5)
+        ax.grid(axis="y", visible=False)
+        ax.set_title(labels[metric], loc="left", fontsize=8, fontweight="bold")
+    axes[-1].set_xticks([0, 0.5, 1, 2, 3], ["1$\\times$", "1.4$\\times$", "2$\\times$", "4$\\times$", "8$\\times$"])
+    axes[-1].set_xlim(-0.1, 3.2)
+    axes[-1].set_xlabel("Error of predicted budget (factor, log scale)")
+    from matplotlib.lines import Line2D
+    h = [Line2D([], [], color=MUTED, marker="o", mfc="none", mew=1.4, ms=8, ls="", label="Within cohort (split-half)"),
+         Line2D([], [], color=BLUE, marker="D", ls="", ms=4.5, label=f"Local pilot (n = {npil})"),
+         Line2D([], [], color=ORANGE, marker="o", ls="", label="Borrowed (other cohorts)"),
+         Line2D([], [], color=ORANGE, marker=">", mfc="white", ls="", label="Borrowed, lower bound")]
+    fig.legend(handles=h, loc="upper center", ncol=2, fontsize=7, bbox_to_anchor=(0.5, 1.04))
+    headline(fig, "Borrowed budgets miss by 2-8x; a 5-person local pilot is close to within-cohort noise")
+    fig.tight_layout()
+    save(fig, out, "fig4_transport_error", dev)
+
+
 def main() -> None:
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     ap = argparse.ArgumentParser()
@@ -242,6 +300,8 @@ def main() -> None:
     out.mkdir(parents=True, exist_ok=True)
     for f in (fig_learning_curves, fig_budgets, fig_loco):
         f(T, out, args.dev, cfg)
+    if (T / "transport_reference_acc.csv").exists():
+        fig_transport_error(T, out, args.dev, cfg)
     fig_moderators(T, out, args.dev)
     print(f"Figures written to {out}")
 
