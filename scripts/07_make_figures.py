@@ -3,9 +3,9 @@
 Fig 1  learning curves: mean character accuracy and share of usable participants vs k
 Fig 2  calibration budgets per cohort: B80 (accuracy) and AUC budget, bootstrap 95% CI
 Fig 3  RQ3 moderators: standardised meta-regression coefficients (± 95% CI)
-Fig 4  RQ4 transportability: observed budget vs leave-one-cohort-out typical budget\nFig 4b transport error vs within-cohort reference and local pilot (needs step 09); used as Fig 4 in the paper
+Fig 4  transport error vs within-cohort reference and local pilot (needs step 09)
 Usage
-  python scripts/07_make_figures.py [--dev]
+  python scripts/07_make_figures.py [--paper] [--dev]
 """
 from __future__ import annotations
 
@@ -189,41 +189,6 @@ def fig_moderators(T, out, dev):
     save(fig, out, "fig3_moderators", dev)
 
 
-def fig_loco(T, out, dev, cfg):
-    tag = "auc_all"
-    path = T / output_name(f"loco_{tag}.csv", dev)
-    if not path.exists():
-        return
-    lo = pd.read_csv(path)
-    lo = lo.assign(key=np.where(lo.observed_censored, 1e3 + lo.observed_max_k, lo.observed_b80)) \
-           .sort_values("key").reset_index(drop=True)
-    fig, ax = plt.subplots(figsize=(6.2, 0.34 * len(lo) + 1.2))
-    for i, r in lo.iterrows():
-        obs = r.observed_max_k if r.observed_censored else r.observed_b80
-        ax.plot([r.pred_median, obs], [i, i], color=MUTED, lw=1.4)
-        ax.plot(r.pred_median, i, "|", ms=11, mew=2, color=INK2)
-        ax.plot(obs, i, ">" if r.observed_censored else "o", ms=6.5, color=ORANGE,
-                mfc=SURFACE if r.observed_censored else ORANGE, mew=1.6)
-        err = f"{r.err_median:.0f}" + ("+" if r.err_median_type == "lower_bound" else "")
-        ax.text(max(obs, r.pred_median) * 1.12, i, err, va="center", fontsize=7.5, color=INK2)
-    ax.set_yticks(range(len(lo)), lo.study)
-    log_k_axis(ax)
-    ax.set_xlabel("AUC budget (calibration characters, log scale)")
-    ax.grid(axis="y", visible=False)
-    from matplotlib.lines import Line2D
-    ax.legend(handles=[Line2D([], [], color=ORANGE, marker="o", ls="none", label="Observed budget"),
-                       Line2D([], [], color=ORANGE, marker=">", ls="none", mfc=SURFACE, label="Observed: not reached"),
-                       Line2D([], [], color=INK2, marker="|", ls="none", ms=10, mew=2,
-                              label="Predicted from other cohorts (median)")],
-              loc="lower center", bbox_to_anchor=(0.5, 1.0), ncol=2, fontsize=8)
-    e = cfg["hypotheses"]["h4_min_error_chars"]
-    share = (lo.err_median >= e).mean()
-    headline(ax, f"A budget borrowed from other cohorts misses by ≥ {e} characters in {share:.0%} of cohorts",
-             loc="left", pad=44)
-    fig.tight_layout()
-    save(fig, out, "fig4_transportability", dev)
-
-
 def fig_transport_error(T, out, dev, cfg):
     """Fig 4: how far each rule's budget is from a cohort's own budget (factor, log2 scale).
 
@@ -232,7 +197,7 @@ def fig_transport_error(T, out, dev, cfg):
     blue  = local pilot of n participants from the same cohort
     """
     npil = 5
-    labels = {"acc": f"B80 (character accuracy, valid-decoding cohorts)",
+    labels = {"acc": "B80 (character accuracy, valid-decoding cohorts)",
               "auc": f"AUC budget (AUC $\\geq$ {cfg['budget']['auc_threshold']}, all cohorts)"}
     fig, axes = plt.subplots(2, 1, figsize=(3.5, 5.0), height_ratios=[9, 14], sharex=True)
     for ax, metric, obsf in zip(axes, ("acc", "auc"), ("b80.csv", "b80_auc.csv")):
@@ -298,10 +263,9 @@ def main() -> None:
     T = project_path(cfg["paths"]["tables"])
     out = project_path(cfg["paths"]["figures"])
     out.mkdir(parents=True, exist_ok=True)
-    for f in (fig_learning_curves, fig_budgets, fig_loco):
+    for f in (fig_learning_curves, fig_budgets):
         f(T, out, args.dev, cfg)
-    if (T / "transport_reference_acc.csv").exists():
-        fig_transport_error(T, out, args.dev, cfg)
+    fig_transport_error(T, out, args.dev, cfg)
     fig_moderators(T, out, args.dev)
     print(f"Figures written to {out}")
 

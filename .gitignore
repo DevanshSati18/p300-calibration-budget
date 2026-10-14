@@ -10,3 +10,10 @@ __pycache__/
 .ipynb_checkpoints/
 .DS_Store
 *.npz
+*.egg-info/
+.pytest_cache/
+paper/*.zip
+paper/build/
+*.aux
+paper/*.log
+*.out

@@ -24,4 +24,13 @@ The full analysis was re-run from scratch and compared with the published result
 **Interpretation:** the residual differences are floating-point effects of different linear-algebra
 libraries on near-singular fits at k = 1; no reported number or conclusion changes.
 
-Published (macOS) outputs: `outputs/tables/`. Linux re-run: `outputs/tables_rerun_linux/`.
+Published outputs: `outputs/tables/`. The Linux re-run tables were compared and then removed from the
+repository to keep it small; the comparison above is the record.
+
+## Second check (13 Oct 2026)
+
+All analysis steps (05, 06, 06b, 09) were re-run from the saved sweep and compared table by table with
+the saved outputs (22 tables): budgets, leave-one-cohort-out, robustness, transport and pilot tables were
+identical (difference 0); fitted statistics differed by at most 3×10⁻¹³. `08_verify_results.py`: 16/16.
+A clean install from GitHub (fresh venv, newer numpy/pandas/scikit-learn) reproduced the statistics
+to 4 decimals. Re-run with `bash scripts/run_analysis.sh`.

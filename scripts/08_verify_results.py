@@ -172,8 +172,6 @@ def main() -> None:
         h_acc = json.load(open(T / "heterogeneity_acc_valid.json"))
         h_auc = json.load(open(T / "heterogeneity_auc_all.json"))
         mods = pd.read_csv(T / "moderators_auc_all.csv").set_index("descriptor")
-        loco_auc = pd.read_csv(T / "loco_auc_all.csv")
-        loco_acc = pd.read_csv(T / "loco_acc_valid.csv")
         coh = pd.read_csv(T / "eligibility_cohorts.csv")
         coh = coh[coh.cohort_eligible]
         expect = {

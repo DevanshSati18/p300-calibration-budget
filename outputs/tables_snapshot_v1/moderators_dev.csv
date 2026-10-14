@@ -1,8 +1,0 @@
-descriptor,k,beta,se,p,tau2_resid,share_explained,p_holm
-seconds_per_calib_char,0,,,,,,
-test_flashes_per_char,3,,,,,,
-grid_size,3,,,,,,
-isi_ms,3,,,,,,
-share_rc,3,,,,,,
-lit_per_flash,3,,,,,,
-als_cohort,3,,,,,,
